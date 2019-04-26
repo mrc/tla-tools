@@ -36,7 +36,10 @@
 ;; filename is guessed to be modulename.tla. Sany errors don't have
 ;; the module name either (makes sense, it's syntax checking the
 ;; file), so it's guessed from the "Parsing file ..." line. Multiple
-;; "Parsing file" lines could lead the errors to the wrong file.
+;; "Parsing file" lines could lead the errors to the wrong file.  As a
+;; hack, there's a super ugly regexp which prevents matching filenames
+;; beginning with "/private/", which is where the temp files go on my
+;; installation.
 
 ;; Error type (warning, error) is not guessed.
 
@@ -45,6 +48,9 @@
 
 ;; tlc requires a config file, and this package does nothing to help
 ;; generate it.
+
+;; It would be nice if it auto reverted the buffer after pcal (which
+;; rewrites the tla file.)
 
 ;;; Code:
 
@@ -57,22 +63,36 @@
 ;;; Compile support
 (require 'compile)
 
+(defvar tla-tools-ignore-file-regexp
+  "\\(?:/\\(?:p\\|[^p].*?\\|pr\\|p[^r].*?\\|pri\\|pr[^i].*?\\|priv\\|pri[^v].*?\\|priva\\|priv[^a].*?\\|privat\\|priva[^t].*?\\|privat[^e]\\|private[^/]+\\)/\\)"
+  "Regexp to skip temp files when trying to work out the module
+file name.
+
+The goal is to ignore /private/ at the start of the file name.
+
+This is super ugly, and likely contains bugs, but Emacs doesn't
+support lookahead assertions (there is a patch to support it:
+https://debbugs.gnu.org/cgi/bugreport.cgi?bug=5393.)")
+
 (defvar tla-tools-error-regexp-alist
-  '((tlc-error
+  `((tlc-error
      "^line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\(.*\\)$"
-     (5 "%s.tla") (1 . 3) (2 . 4))
+     (5 "%s.tla") (1 . 3) (2 . 4) 2)
     (tlc-nested-error
      "^\\([0-9]+\\)\\. Line \\([0-9]+\\), column \\([0-9]+\\) to line \\([0-9]+\\), column \\([0-9]+\\) in \\(.*\\)$"
-     (6 "%s.tla") (2 . 4) (3 . 5))
+     (6 "%s.tla") (2 . 4) (3 . 5) 2)
+    (tlc-nested-behavior
+     "^State \\([0-9]+\\)\\: \<Next line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\(.*\\)\>$"
+     (6 "%s.tla") (2 . 4) (3 . 5) 0)
     (tlc-assertion-failure
      "^\"Failure of assertion at line \\([0-9]+\\), column \\([0-9]+\\)\\.\"$"
-     nil 1 2)
+     nil 1 2 2)
     (sany-error
      "^Encountered \"\\(.*\\)\" at line \\([0-9]+\\), column \\([0-9]+\\)"
-     nil 2 3)
+     nil 2 3 2)
     (sany-file
-     "^Parsing file \\(.*\\)$"
-     1 nil nil nil nil))
+     ,(concat "^Parsing file \\(" tla-tools-ignore-file-regexp ".*\\)$")
+     1 nil nil 0 1))
   "List of regexps for TLA+ tools (tlc, pcal, sany)
 See `compilation-error-regexp-alist` for the formatting.")
 
@@ -88,6 +108,54 @@ This allows \\[next-error]/\\[previous-error] to find the errors."
        (push item compilation-error-regexp-alist-alist))
      tla-tools-error-regexp-alist))))
 
+(defun tla-tools--test-crazy-sany-file-regexp ()
+  (let ((re (cadr (assoc 'sany-file tla-tools-error-regexp-alist)))
+	(input "Parsing file /Users/mrc/shed/tla/learntla/hanoi.tla
+Parsing file /private/var/folders/wl/ftangh/T/TLC.tla
+Parsing file /private/var/folders/wl/ftangh/T/Sequences.tla
+Parsing file /private/var/folders/wl/ftangh/T/Integers.tla
+Parsing file /private/var/folders/wl/ftangh/T/Naturals.tla
+Parsing file /private/var/folders/wl/ftangh/T/FiniteSets.tla
+Parsing file /Users/private/test
+Parsing file /Users/mrc/private/var/folders/wl/ftangh/T/TLC.tla
+Parsing file /private/test
+Parsing file /p/test
+Parsing file /px/test
+Parsing file /pr/test
+Parsing file /prx/test
+Parsing file /pri/test
+Parsing file /prix/test
+Parsing file /priv/test
+Parsing file /privx/test
+Parsing file /priva/test
+Parsing file /privax/test
+Parsing file /privat/test
+Parsing file /privatx/test
+Parsing file /privatex/test
+")
+	(expected "Parsing file /Users/mrc/shed/tla/learntla/hanoi.tla
+Parsing file /Users/private/test
+Parsing file /Users/mrc/private/var/folders/wl/ftangh/T/TLC.tla
+Parsing file /p/test
+Parsing file /px/test
+Parsing file /pr/test
+Parsing file /prx/test
+Parsing file /pri/test
+Parsing file /prix/test
+Parsing file /priv/test
+Parsing file /privx/test
+Parsing file /priva/test
+Parsing file /privax/test
+Parsing file /privat/test
+Parsing file /privatx/test
+Parsing file /privatex/test
+"))
+    (with-temp-buffer
+      (insert input)
+      (keep-lines re (point-min) (point-max))
+      (if (string= (buffer-string) expected)
+	  (message "Crazy sany-file regex seems to work!")
+	(error "unexpected output: %s" (buffer-string))))))
 
 
 (provide 'tla-tools)
