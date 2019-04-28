@@ -4,6 +4,7 @@ TLA+ tools for Emacs
 
 ## Usage
 
+### Compilation-mode helper
 Add the source directory to `load-path` and `M-x load tla-tools`. Or
 just eval the buffer.
 
@@ -14,7 +15,12 @@ Using [tla-bin](https://github.com/pmer/tla-bin), a TLA+ source file
 can be checked with M-x compile, with a compile command of `tlc
 <tla-file>` or `pcal <tla-file> && tlc <tla-file>`.
 
-## Bugs
+### tla-pcal-mode
+
+`tla-pcal-mode` is a mixed mode for editing TLA+ and PlusCal source
+files. It depends on [polymode](https://polymode.github.io/).
+
+### Bugs
 
 * Doesn't implement much except helping next-error/previous-error.
 * No support TLC reports errors just with the module name, the
@@ -32,6 +38,9 @@ can be checked with M-x compile, with a compile command of `tlc
 * tlc requires a config file, and this package does nothing to help
   generate it.
 * It would be nice if it auto reverted the buffer after pcal (which
-  rewrites the tla file.)
-
+  rewrites the tla file.) Until something nicer is done, I'm using
+  `auto-revert-mode`. Alternatively check out
+  [tlaplus-cli-template](https://github.com/owickstrom/tlaplus-cli-template)
+  which keeps your source clean and puts the pcal translations into a
+  `target/` directory.
 
