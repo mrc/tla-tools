@@ -44,3 +44,8 @@ files. It depends on [polymode](https://polymode.github.io/).
   which keeps your source clean and puts the pcal translations into a
   `target/` directory.
 
+### Running pcal and tlc
+
+* [tla-bin](https://github.com/pmer/tla-bin)
+* [TLC command line options](https://lamport.azurewebsites.net/tla/tlc-options.html?back-link=tools.html)
+* [tlaplus-cli-template](https://github.com/owickstrom/tlaplus-cli-template)
