@@ -121,9 +121,13 @@
   :head-mode 'host
   :tail-mode 'host)
 
+;;;###autoload
 (define-polymode tla-pcal-mode
   :hostmode 'poly-tla-pcal-hostmode
   :innermodes '(poly-tla-pcal--pcal-innermode))
+
+;;;###autoload
+(add-to-list 'auto-mode-alist (cons "\\.tla\\'" 'tla-pcal-mode))
 
 (provide 'tla-pcal-mode)
 ;;; tla-pcal-mode.el ends here
