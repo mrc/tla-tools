@@ -37,8 +37,8 @@
     (modify-syntax-entry ?\\ ". 1" table)  ; \* comment starter
     (modify-syntax-entry ?* ". 23c" table) ; (* or *) or \*
     (modify-syntax-entry ?\n "> c" table)  ; \* comment ender
-    (modify-syntax-entry ?_ "w" table)     ; x_y
-    (modify-syntax-entry ?' "w" table)     ; x'
+    (modify-syntax-entry ?_ "_" table)     ; x_y
+    (modify-syntax-entry ?' "_" table)     ; x'
     table))
 
 (defvar pcal-mode-syntax-table
@@ -129,7 +129,8 @@
   (concat ".*\\<begin\\>"            "\\|"
 	  ".*\\<if\\>.*\\<then\\>"   "\\|"
 	  ".*\\<do\\>"               "\\|"
-	  ".*\\<either\\>")
+	  ".*\\<either\\>"           "\\|"
+	  ".*\\<define\\>")
   "Regexp for matching the beginning of a block.")
 
 (defvar pcal-mode--block-else-re
@@ -141,6 +142,12 @@
 	  ".*\\<end if\\>"           "\\|"
 	  ".*\\<end either\\>")
   "Regexp for matching the end of a block.")
+
+(defvar pcal-mode--statement-end-re ".*;"
+  "Regexp for matching the end of a statement.")
+
+(defvar pcal-mode--statement-begin-re
+  (concat ".*\\<variables?\\>"))
 
 (defun tla-mode--indent-column ()
   "Find the appropriate column for the current line."
@@ -189,12 +196,18 @@ nil if the syntax isn't recognized for indentation."
 	  ((looking-at-p (concat "[[:blank:]]*" pcal-mode--align-syntax-re))
 	   (tla-mode--indent-column))
 	  (t
-	   ;; work backwards and base indent off the previous line
-	   (let (current)
+	   ;; work backwards and base indent off the previous block
+	   (let (current after-stmt)
 	     (while (null current)
 	       (forward-line -1)
 	       (cond ((looking-at-p pcal-mode--block-end-re)
 		      (setq current (current-indentation)))
+		     ((looking-at-p pcal-mode--statement-end-re)
+		      (setq after-stmt t))
+		     ((looking-at-p pcal-mode--statement-begin-re)
+		      (if after-stmt
+			  (setq current (current-indentation))
+			(setq current (+ (current-indentation) pcal-mode-indent-offset))))
 		     ((or (looking-at-p pcal-mode--block-begin-re)
 			  (looking-at-p pcal-mode--block-else-re))
 		      (setq current (+ (current-indentation) pcal-mode-indent-offset)))
@@ -227,16 +240,29 @@ nil if the syntax isn't recognized for indentation."
 ;; test indentation
 (require 'ert)
 (ert-deftest pcal-mode--indent-column-tests ()
-  (let ((lines '((0 "begin")
-		 (2 "  skip")
-		 (2 "  begin")
-		 (4 "    if blah then")
-		 (6 "      skip")
+  (let ((lines '((0 "variables")
+		 (2 "  x = 17,")
+		 (2 "  y = 23;")
+		 (0 "")
+		 (0 "define")
+		 (2 "  Everything == TRUE")
+		 (0 "end define;")
+		 (0 "macro fiddle(n) begin")
+		 (2 "  if n = 1 then")
+		 (4 "    skip;")
+		 (2 "  end if;")
+		 (0 "end macro;")
+		 (0 "")
+		 (0 "begin")
+		 (2 "  skip;")
+		 (2 "  while 1 /= 2 do")
+		 (4 "    if 1 < 2 then")
+		 (6 "      skip;")
 		 (4 "    else")
-		 (6 "      skip")
-		 (4 "    end")
-		 (4 "    skip")
-		 (2 "  end")
+		 (6 "      skip;")
+		 (4 "    end if;")
+		 (4 "    skip;")
+		 (2 "  end while;")
 		 (0 "end"))))
     (dotimes (n 100)
       (with-temp-buffer
