@@ -74,6 +74,9 @@ This is super ugly, and likely contains bugs, but Emacs doesn't
 support lookahead assertions (there is a patch to support it:
 https://debbugs.gnu.org/cgi/bugreport.cgi?bug=5393.)")
 
+(defvar tla-tools-state-face 'font-lock-function-name-face
+  "Face name to use for state names in tlc output.")
+
 (defvar tla-tools-error-regexp-alist
   `((tlc-error
      "^line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\(.*\\)$"
@@ -81,12 +84,18 @@ https://debbugs.gnu.org/cgi/bugreport.cgi?bug=5393.)")
     (tlc-nested-error
      "^\\([0-9]+\\)\\. Line \\([0-9]+\\), column \\([0-9]+\\) to line \\([0-9]+\\), column \\([0-9]+\\) in \\(.*\\)$"
      (6 "%s.tla") (2 . 4) (3 . 5) 2)
-    (tlc-nested-behavior
-     "^State \\([0-9]+\\)\\: \<Next line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\(.*\\)\>$"
-     (6 "%s.tla") (2 . 4) (3 . 5) 0)
+    (tls-unlabeled-state
+     "^State \\([0-9]+\\): <Initial predicate>"
+     nil nil nil 0)
+    (tlc-labeled-state
+     "^State \\([0-9]+\\): <\\(.*\\) line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\(.*\\)>$"
+     (7 "%s.tla") (3 . 5) (4 . 6) 0 0 (2 tla-tools-state-face))
     (tlc-assertion-failure
      "^\"Failure of assertion at line \\([0-9]+\\), column \\([0-9]+\\)\\.\"$"
      nil 1 2 2)
+    (tlc-invariant-violation
+     "^Error: Invariant \\(.*\\) is violated.*"
+     nil nil nil 2 0 (1 tla-tools-state-face))
     (sany-error
      "^Encountered \"\\(.*\\)\" at line \\([0-9]+\\), column \\([0-9]+\\)"
      nil 2 3 2)
@@ -100,13 +109,16 @@ See `compilation-error-regexp-alist` for the formatting.")
   "Add TLA+ tools regexps for `compilation-mode`.
 This allows \\[next-error]/\\[previous-error] to find the errors."
   (interactive)
-  (when (and (boundp 'compilation-error-regexp-alist-alist)
-	     (not (assoc (caar tla-tools-error-regexp-alist) compilation-error-regexp-alist-alist))
+  (when (boundp 'compilation-error-regexp-alist-alist)
     (mapcar
      (lambda (item)
-       (push (car item) compilation-error-regexp-alist)
-       (push item compilation-error-regexp-alist-alist))
-     tla-tools-error-regexp-alist))))
+       (unless (member (car item) compilation-error-regexp-alist)
+	 (push (car item) compilation-error-regexp-alist))
+       (let ((e (assoc (car item) compilation-error-regexp-alist-alist)))
+	 (if e
+	     (setcdr e (cdr item))
+	   (push item compilation-error-regexp-alist-alist))))
+     tla-tools-error-regexp-alist)))
 
 (defun tla-tools--test-crazy-sany-file-regexp ()
   (let ((re (cadr (assoc 'sany-file tla-tools-error-regexp-alist)))
