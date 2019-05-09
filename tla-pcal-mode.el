@@ -147,7 +147,12 @@
   "Regexp for matching the end of a statement.")
 
 (defvar pcal-mode--statement-begin-re
-  (concat ".*\\<variables?\\>"))
+  (concat ".*\\<variables?\\>")
+  "Regexp for matching the start of a statement.")
+
+(defvar pcal-mode--label-re
+  ".*:[[:blank:]]*$"
+  "Regexp for matching a label.")
 
 (defun tla-mode--indent-column ()
   "Find the appropriate column for the current line."
@@ -187,12 +192,13 @@ nil if the syntax isn't recognized for indentation."
   (save-excursion
     (beginning-of-line)
     (cond ((bobp) 0)
-	  ((looking-at-p pcal-mode--block-end-re)
+	  ((or (looking-at-p pcal-mode--block-end-re)
+	       (looking-at-p pcal-mode--block-else-re))
 	   (pcal-mode--block-start)
 	   (current-indentation))
-	  ((looking-at-p pcal-mode--block-else-re)
+	  ((looking-at-p pcal-mode--label-re)
 	   (pcal-mode--block-start)
-	   (current-indentation))
+	   (+ (current-indentation) pcal-mode-indent-offset))
 	  ((looking-at-p (concat "[[:blank:]]*" pcal-mode--align-syntax-re))
 	   (tla-mode--indent-column))
 	  (t
@@ -209,7 +215,8 @@ nil if the syntax isn't recognized for indentation."
 			  (setq current (current-indentation))
 			(setq current (+ (current-indentation) pcal-mode-indent-offset))))
 		     ((or (looking-at-p pcal-mode--block-begin-re)
-			  (looking-at-p pcal-mode--block-else-re))
+			  (looking-at-p pcal-mode--block-else-re)
+			  (looking-at-p pcal-mode--label-re))
 		      (setq current (+ (current-indentation) pcal-mode-indent-offset)))
 		     ((bobp)
 		      (setq current 0))))
@@ -254,15 +261,17 @@ nil if the syntax isn't recognized for indentation."
 		 (0 "end macro;")
 		 (0 "")
 		 (0 "begin")
-		 (2 "  skip;")
-		 (2 "  while 1 /= 2 do")
-		 (4 "    if 1 < 2 then")
-		 (6 "      skip;")
-		 (4 "    else")
-		 (6 "      skip;")
-		 (4 "    end if;")
+		 (2 "  Label1:")
 		 (4 "    skip;")
-		 (2 "  end while;")
+		 (4 "    while 1 /= 2 do")
+		 (6 "      if 1 < 2 then")
+		 (8 "        skip;")
+		 (6 "      else")
+		 (8 "        skip;")
+		 (6 "      end if;")
+		 (6 "      Label2:")
+		 (8 "        skip;")
+		 (4 "    end while;")
 		 (0 "end"))))
     (dotimes (n 100)
       (with-temp-buffer
