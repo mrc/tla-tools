@@ -130,7 +130,8 @@
 	  ".*\\<if\\>.*\\<then\\>"   "\\|"
 	  ".*\\<do\\>"               "\\|"
 	  ".*\\<either\\>"           "\\|"
-	  ".*\\<define\\>")
+	  ".*\\<define\\>"           "\\|"
+	  ".*\\<process\\>")
   "Regexp for matching the beginning of a block.")
 
 (defvar pcal-mode--block-else-re

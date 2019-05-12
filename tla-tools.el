@@ -85,7 +85,7 @@ https://debbugs.gnu.org/cgi/bugreport.cgi?bug=5393.)")
      "^\\([0-9]+\\)\\. Line \\([0-9]+\\), column \\([0-9]+\\) to line \\([0-9]+\\), column \\([0-9]+\\) in \\(.*\\)$"
      (6 "%s.tla") (2 . 4) (3 . 5) 2)
     (tls-unlabeled-state
-     "^State \\([0-9]+\\): <Initial predicate>"
+     "^State \\([0-9]+\\): \\(<Initial predicate>\\|Stuttering\\)"
      nil nil nil 0)
     (tlc-labeled-state
      "^State \\([0-9]+\\): <\\(.*\\) line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\(.*\\)>$"
