@@ -34,7 +34,7 @@
     (modify-syntax-entry ?\) ")(4" table)  ; *) comment ender
     (modify-syntax-entry ?. "." table)
     (modify-syntax-entry ?, "." table)
-    (modify-syntax-entry ?\\ ". 1" table)  ; \* comment starter
+    (modify-syntax-entry ?\\ "_ 1" table)  ; \* comment starter, also \A, \in, etc
     (modify-syntax-entry ?* ". 23c" table) ; (* or *) or \*
     (modify-syntax-entry ?\n "> c" table)  ; \* comment ender
     (modify-syntax-entry ?_ "_" table)     ; x_y
@@ -64,6 +64,8 @@
        '("\\\\\\*" "(\\*" "\\*)")
        'symbols)
      . font-lock-keyword-comment-delimiter-face)
+    ("\\_<\\\\[[:word:]]+"
+     . font-lock-builtin-face)
     ))
 
 (defvar pcal-mode-font-lock-keywords
@@ -82,6 +84,8 @@
        '("\\\\\\*" "(\\*" "\\*)")
        'symbols)
      . font-lock-keyword-comment-delimiter-face)
+    ("\\_<\\\\[[:word:]]+"
+     . font-lock-builtin-face)
     ))
 
 (defun tla-pcal-mode-set-comment-syntax-vars ()
