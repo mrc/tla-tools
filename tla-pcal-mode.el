@@ -47,16 +47,8 @@
     (modify-syntax-entry ?\} "){" table)
     table))
 
-(defvar tla-mode-font-lock-keywords
+(defvar tla-pcal-mode--shared-keywords
   `((,(regexp-opt
-       '("ASSUME" "ASSUMPTION" "AXIOM" "CASE" "CHOOSE" "CONSTANT"
-	 "CONSTANTS" "DOMAIN" "ELSE" "ENABLED" "EXCEPT" "EXTENDS"
-	 "IF" "IN" "INSTANCE" "LET" "LOCAL" "MODULE" "OTHER"
-	 "SF_" "SUBSET" "THEN" "THEORUM" "UNCHANGED" "UNION"
-	 "VARIABLE" "VARIABLES" "WF_" "WITH")
-       'symbols)
-     . font-lock-keyword-face)
-    (,(regexp-opt
        '("TRUE" "FALSE")
        'symbols)
      . font-lock-constant-face)
@@ -66,6 +58,20 @@
      . font-lock-keyword-comment-delimiter-face)
     ("\\_<\\\\[[:word:]]+"
      . font-lock-builtin-face)
+    ("\\b\\([[:word:]]+\\)\\((.*)\\)?\\S+=="
+     . '(1 font-lock-function-name-face)
+     )))
+
+(defvar tla-mode-font-lock-keywords
+  `((,(regexp-opt
+       '("ASSUME" "ASSUMPTION" "AXIOM" "CASE" "CHOOSE" "CONSTANT"
+	 "CONSTANTS" "DOMAIN" "ELSE" "ENABLED" "EXCEPT" "EXTENDS"
+	 "IF" "IN" "INSTANCE" "LET" "LOCAL" "MODULE" "OTHER"
+	 "SF_" "SUBSET" "THEN" "THEORUM" "UNCHANGED" "UNION"
+	 "VARIABLE" "VARIABLES" "WF_" "WITH")
+       'symbols)
+     . font-lock-keyword-face)
+    ,@tla-pcal-mode--shared-keywords
     ))
 
 (defvar pcal-mode-font-lock-keywords
@@ -76,17 +82,7 @@
 	 "variables" "when" "while" "with" ":=" "||")
        'symbols)
      . font-lock-keyword-face)
-    (,(regexp-opt
-       '("TRUE" "FALSE")
-       'symbols)
-     . font-lock-constant-face)
-    (,(regexp-opt
-       '("\\\\\\*" "(\\*" "\\*)")
-       'symbols)
-     . font-lock-keyword-comment-delimiter-face)
-    ("\\_<\\\\[[:word:]]+"
-     . font-lock-builtin-face)
-    ))
+    ,@tla-pcal-mode--shared-keywords))
 
 (defun tla-pcal-mode-set-comment-syntax-vars ()
   (setq-local comment-start "\\*")
