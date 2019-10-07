@@ -28,6 +28,8 @@
 
 ;;; Code:
 
+(require 'polymode)
+
 (defvar tla-mode-syntax-table
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?\( "()1" table)  ; (* comment starter
@@ -280,18 +282,23 @@ nil if the syntax isn't recognized for indentation."
 		 (8  "        skip;")
 		 (4  "    end while;")
 		 (0  "end"))))
-    (dotimes (n 100)
+    (dotimes (n (length lines))
       (with-temp-buffer
-	(dolist (line lines)
-	  (insert (cadr line) "\n"))
-	(goto-char (random (point-max)))
-	(save-excursion
-	  (beginning-of-line)
-	  (delete-horizontal-space))
-	(let* ((pcal-mode-indent-offset 2)
-	       (res (pcal-mode--indent-column))
-	       (exp (car (elt lines (- (line-number-at-pos) 1)))))
-	  (should (= exp res)))))))
+        (dolist (line lines)
+          (insert (cadr line) "\n"))
+        (goto-char (point-min))
+        (forward-line n) ; Add something in to place point at various places in line?
+        (save-excursion
+          (beginning-of-line)
+          (delete-horizontal-space))
+        (let* ((pcal-mode-indent-offset 2)
+               (actual-indent (pcal-mode--indent-column))
+               (exp-spec (elt lines n))
+               (exp-indent (car exp-spec))
+               (exp-line (cadr exp-spec)))
+          ; Add enough extra data to make clear where the failure happened
+          (should (equal (list exp-indent n exp-line)
+                         (list actual-indent n exp-line))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; polymode
