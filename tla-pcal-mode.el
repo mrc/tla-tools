@@ -128,12 +128,19 @@
   "Indent lines by this many columns.")
 
 (defvar pcal-mode--block-begin-re
-  (concat ".*\\<begin\\>"            "\\|"
-	  ".*\\<if\\>.*\\<then\\>"   "\\|"
-	  ".*\\<do\\>"               "\\|"
-	  ".*\\<either\\>"           "\\|"
-	  ".*\\<define\\>"           "\\|"
-	  ".*\\<process\\>")
+  (concat "^[[:blank:]]*"
+          (regexp-opt
+           '("begin"
+             "define"
+             "either"
+             "if"
+             "macro"
+             "procedure"
+             "process"
+             "while"
+             "with")
+           'symbols)
+          )
   "Regexp for matching the beginning of a block.")
 
 (defvar pcal-mode--block-else-re
@@ -265,6 +272,8 @@ nil if the syntax isn't recognized for indentation."
 		 (4  "    skip;")
 		 (2  "  end if;")
 		 (0  "end macro;")
+         (0  "\* comment with keyword in it: process")
+         (0  "\* should not be indented")
 		 (0  "")
 		 (0  "begin")
 		 (2  "  Label1:")
