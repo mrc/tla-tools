@@ -39,8 +39,8 @@
 		 (4  "    skip;")
 		 (2  "  end if;")
 		 (0  "end macro;")
-         (0  "\* comment with keyword in it: process")
-         (0  "\* should not be indented")
+                 (0  "\* comment with keyword in it: process")
+                 (0  "\* should not be indented")
 		 (0  "")
 		 (0  "begin")
 		 (2  "  Label1:")
@@ -76,3 +76,7 @@
           ; Add enough extra data to make clear where the failure happened
           (should (equal (list exp-indent n exp-line)
                          (list actual-indent n exp-line))))))))
+
+; Local Variables:
+; tab-width: 8
+; End:
