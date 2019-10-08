@@ -219,20 +219,20 @@ nil if the syntax isn't recognized for indentation."
 	     (while (null current)
 	       (forward-line -1)
 	       (cond
-            ((looking-at-p pcal-mode--block-end-re)
-             (setq current (current-indentation)))
-            ((looking-at-p pcal-mode--statement-end-re)
-             (setq after-stmt t))
-            ((looking-at-p pcal-mode--statement-begin-re)
-             (if after-stmt
-                 (setq current (current-indentation))
-               (setq current (+ (current-indentation) pcal-mode-indent-offset))))
-            ((or (looking-at-p pcal-mode--block-begin-re)
-                 (looking-at-p pcal-mode--block-else-re)
-                 (looking-at-p pcal-mode--label-re))
-             (setq current (+ (current-indentation) pcal-mode-indent-offset)))
-            ((bobp)
-             (setq current 0))))
+                ((looking-at-p pcal-mode--block-end-re)
+                 (setq current (current-indentation)))
+                ((looking-at-p pcal-mode--statement-end-re)
+                 (setq after-stmt t))
+                ((looking-at-p pcal-mode--statement-begin-re)
+                 (if after-stmt
+                     (setq current (current-indentation))
+                   (setq current (+ (current-indentation) pcal-mode-indent-offset))))
+                ((or (looking-at-p pcal-mode--block-begin-re)
+                     (looking-at-p pcal-mode--block-else-re)
+                     (looking-at-p pcal-mode--label-re))
+                 (setq current (+ (current-indentation) pcal-mode-indent-offset)))
+                ((bobp)
+                 (setq current 0))))
 	     (and current (max 0 current)))))))
 
 (defun pcal-mode-indent-line ()
@@ -278,3 +278,7 @@ nil if the syntax isn't recognized for indentation."
 
 (provide 'tla-pcal-mode)
 ;;; tla-pcal-mode.el ends here
+
+; Local Variables:
+; tab-width: 8
+; End:
