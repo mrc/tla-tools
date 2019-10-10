@@ -24,8 +24,9 @@
 
 ;;; Code:
 
-;; test indentation
 (require 'ert)
+
+;; test indentation
 (ert-deftest pcal-mode--indent-column-tests ()
   (let ((lines '((0  "variables")
 		 (2  "  x = 17,")
@@ -59,23 +60,73 @@
 		 (8  "        skip;")
 		 (4  "    end while;")
 		 (0  "end"))))
-    (dotimes (n (length lines))
-      (with-temp-buffer
-        (dolist (line lines)
-          (insert (cadr line) "\n"))
-        (goto-char (point-min))
-        (forward-line n) ; Add something in to place point at various places in line?
-        (save-excursion
-          (beginning-of-line)
-          (delete-horizontal-space))
-        (let* ((pcal-mode-indent-offset 2)
-               (actual-indent (pcal-mode--indent-column))
-               (exp-spec (elt lines n))
-               (exp-indent (car exp-spec))
-               (exp-line (cadr exp-spec)))
-          ; Add enough extra data to make clear where the failure happened
-          (should (equal (list exp-indent n exp-line)
-                         (list actual-indent n exp-line))))))))
+    (run-indent-test lines)))
+
+(ert-deftest pcal-mode--indent-else-blocks-tests ()
+  (let ((lines '((0 "if 1 /= 2 then")
+                 (2 "  foo = 13;")
+                 (0 "else")
+                 (2 "  foo = 42;")
+                 (0 "end if;")
+                 ;
+                 (0 "if 2 /= 3 then")
+                 (2 "  bar = 13;")
+                 (2 "  /* ignore else in comment")
+                 (2 "  baz = 27;")
+                 (0 "end if;")
+                 ;
+                 (0 "if 3 /= 4 then")
+                 (2 "  if 4 /= 5 then")
+                 (4 "    foo = 23;")
+                 (2 "  else")
+                 (4 "    foo = 97;")
+                 (2 "  end if;")
+                 (2 "  foo = 77;")
+                 (0 "end if;")
+                 )))
+    (run-indent-test lines)))
+
+(ert-deftest pcal-mode--indent-end-block-tests ()
+  (let ((lines '((0 "if 1 /= 2 then")
+                 (2 "  foo = 18;")
+                 (0 "end if;")
+                 ;
+                 (0 "if 2 /= 3 then")
+                 (2 "  /* ignore end in comment")
+                 (2 "  baz = 29;")
+                 (0 "end if;")
+                 ;; Add back in the below tests once I get begins to line up.
+                 ;; Right now, they're indenting,
+                 ;; (0 "process thing")
+                 ;; (0 "begin")
+                 ;; (2 "  foo = 49;")
+                 ;; (0 "end process;")
+                 ;; ;
+                 ;; (0 "fair process thing")
+                 ;; (0 "begin")
+                 ;; (2 "  foo = 49;")
+                 ;; (0 "end process;")
+                 )))
+    (run-indent-test lines)))
+
+(defun run-indent-test (lines)
+  (dotimes (n (length lines))
+    (with-temp-buffer
+      (dolist (line lines)
+        (insert (cadr line) "\n"))
+      (goto-char (point-min))
+      (forward-line n) ; Add something in to place point at various places in line?
+      (save-excursion
+        (beginning-of-line)
+        (delete-horizontal-space))
+      (let* ((pcal-mode-indent-offset 2) ; dynamic binding because of defvar
+             (actual-indent (pcal-mode--indent-column))
+             (exp-spec (elt lines n))
+             (exp-indent (car exp-spec))
+             (exp-line (cadr exp-spec)))
+        ; Add enough extra data to make clear where the failure happened
+        (should (equal (list exp-indent n exp-line)
+                       (list actual-indent n exp-line)))))))
 
 ; Local Variables:
 ; tab-width: 8
