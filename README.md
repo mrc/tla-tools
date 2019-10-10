@@ -2,6 +2,15 @@
 
 TLA+ tools for Emacs
 
+### tla-pcal-mode
+
+`tla-pcal-mode` is a mixed mode for editing TLA+ and PlusCal source
+files. It depends on [polymode](https://polymode.github.io/).
+
+It supports the [p-syntax](https://lamport.azurewebsites.net/tla/p-manual.pdf)
+for PlusCal, not the c-syntax.
+
+
 ## Usage
 
 ### Compilation-mode helper
@@ -14,11 +23,6 @@ compilation mode.
 Using [tla-bin](https://github.com/pmer/tla-bin), a TLA+ source file
 can be checked with M-x compile, with a compile command of `tlc
 <tla-file>` or `pcal <tla-file> && tlc <tla-file>`.
-
-### tla-pcal-mode
-
-`tla-pcal-mode` is a mixed mode for editing TLA+ and PlusCal source
-files. It depends on [polymode](https://polymode.github.io/).
 
 ### Bugs
 
