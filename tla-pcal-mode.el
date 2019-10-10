@@ -144,18 +144,15 @@
   "Regexp for matching the beginning of a block.")
 
 (defvar pcal-mode--block-else-re
-  (concat ".*\\<else\\>"  "\\|"
-	  ".*\\<elsif\\>" "\\|"
-	  ".*\\<or\\>")
+  (concat "^[[:blank:]]*" (regexp-opt '("else" "elsif" "or")))
   "Regexp for matching the else/or condition of an if-then-else/either.")
 
 (defvar pcal-mode--block-end-re
-  (concat ".*\\<end\\>"              "\\|"
-	  ".*\\<end if\\>"           "\\|"
-	  ".*\\<end either\\>")
+  "^[[:blank:]]*end\\>"
   "Regexp for matching the end of a block.")
 
-(defvar pcal-mode--statement-end-re ".*;"
+(defvar pcal-mode--statement-end-re
+  ".*;"
   "Regexp for matching the end of a statement.")
 
 (defvar pcal-mode--statement-begin-re
