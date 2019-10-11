@@ -137,6 +137,8 @@
              "macro"
              "procedure"
              "process"
+             "fair process"
+             "fair+ process"
              "while"
              "with")
            'symbols)
@@ -144,8 +146,17 @@
   "Regexp for matching the beginning of a block.")
 
 (defvar pcal-mode--block-else-re
-  (concat "^[[:blank:]]*" (regexp-opt '("else" "elsif" "or")))
+  (concat "^[[:blank:]]*"
+          (regexp-opt
+           '("else"
+             "elsif"
+             "or")))
   "Regexp for matching the else/or condition of an if-then-else/either.")
+
+; Strings that matches block end will match process end, check process end first
+(defvar pcal-mode--process-end-re
+  "^[[:blank:]]*end process\\>"
+  "Regexp for matching the end of a process.")
 
 (defvar pcal-mode--block-end-re
   "^[[:blank:]]*end\\>"
@@ -201,6 +212,8 @@ nil if the syntax isn't recognized for indentation."
   (save-excursion
     (beginning-of-line)
     (cond ((bobp) 0)
+          ((looking-at-p pcal-mode--process-end-re)
+           (setq current 0))
 	  ((or (looking-at-p pcal-mode--block-end-re)
 	       (looking-at-p pcal-mode--block-else-re))
 	   (pcal-mode--block-start)

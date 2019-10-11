@@ -95,17 +95,32 @@
                  (2 "  /* ignore end in comment")
                  (2 "  baz = 29;")
                  (0 "end if;")
-                 ;; Add back in the below tests once I get begins to line up.
-                 ;; Right now, they're indenting,
-                 ;; (0 "process thing")
-                 ;; (0 "begin")
-                 ;; (2 "  foo = 49;")
-                 ;; (0 "end process;")
-                 ;; ;
-                 ;; (0 "fair process thing")
-                 ;; (0 "begin")
-                 ;; (2 "  foo = 49;")
-                 ;; (0 "end process;")
+                 )))
+    (run-indent-test lines)))
+
+(ert-deftest pcal-mode--indent-process-tests ()
+  (let ((lines '((0 "process thing")
+                 (2 "  begin")
+                 (4 "    foo = 49;")
+                 (0 "end process;")
+                 ;;
+                 (0 "fair process thing")
+                 (2 "  begin")
+                 (4 "    foo = 49;")
+                 (0 "end process;")
+                 ;;
+                 (0 "fair+ process thing")
+                 (2 "  begin")
+                 (4 "    foo = 49;")
+                 (0 "end process;")
+                 ;;
+                 (0 "process thing")
+                 (2 "  variables")
+		 (4 "    processtest_x = 17,")
+		 (4 "    processtest_y = 23;")
+                 (2 "  begin")
+                 (4 "    processtest_foo = 49;")
+                 (0 "end process;")
                  )))
     (run-indent-test lines)))
 
@@ -125,8 +140,8 @@
              (exp-indent (car exp-spec))
              (exp-line (cadr exp-spec)))
         ; Add enough extra data to make clear where the failure happened
-        (should (equal (list exp-indent n exp-line)
-                       (list actual-indent n exp-line)))))))
+        (should (equal (list exp-indent (list 'line n) exp-line)
+                       (list actual-indent (list 'line n) exp-line)))))))
 
 ; Local Variables:
 ; tab-width: 8
