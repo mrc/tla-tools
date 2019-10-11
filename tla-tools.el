@@ -79,7 +79,7 @@ https://debbugs.gnu.org/cgi/bugreport.cgi?bug=5393.)")
 
 (defvar tla-tools-error-regexp-alist
   `((tlc-error
-     "^line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\(.*\\)$"
+     "line \\([0-9]+\\), col \\([0-9]+\\) to line \\([0-9]+\\), col \\([0-9]+\\) of module \\([[:word:]]*\\)"
      (5 "%s.tla") (1 . 3) (2 . 4) 2)
     (tlc-nested-error
      "^\\([0-9]+\\)\\. Line \\([0-9]+\\), column \\([0-9]+\\) to line \\([0-9]+\\), column \\([0-9]+\\) in \\(.*\\)$"
@@ -172,3 +172,8 @@ Parsing file /privatex/test
 
 (provide 'tla-tools)
 ;;; tla-tools.el ends here
+
+
+; Local Variables:
+; tab-width: 8
+; End:
