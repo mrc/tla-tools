@@ -124,6 +124,36 @@
                  )))
     (run-indent-test lines)))
 
+
+(ert-deftest pcal-mode--indent-label-tests ()
+  (let ((lines '((0 "process thing")
+                 (2 "  begin")
+                 (4 "    Label:")
+                 (6 "      inside_label = thing")
+                 (0 "end process;")
+                 ;;
+                 (0 "process thing")
+                 (2 "  begin")
+                 (4 "    Label_Long:")
+                 (6 "      inside_label_long = thing")
+                 (0 "end process;")
+                 ;;
+                 (0 "process thing")
+                 (2 "  begin")
+                 (4 "    Label0:")
+                 (6 "      inside_label0 = thing")
+                 (0 "end process;")
+                 ;;
+                 (0 "fair process thing")
+                 (2 "  begin")
+                 (4 "    active = { c \in Clients:")
+                 (4"     no_indent_after_inner_colon(c)}")
+                 (0 "end process;")
+                 ;;
+                 )))
+    (run-indent-test lines)))
+
+
 (defun run-indent-test (lines)
   (dotimes (n (length lines))
     (with-temp-buffer

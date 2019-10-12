@@ -49,6 +49,9 @@
     (modify-syntax-entry ?\} "){" table)
     table))
 
+(defvar pcal-mode--identifier-re
+  "[A-Za-z0-9_]+") ; Actually, can't be just a digit, but oh well
+
 (defvar tla-pcal-mode--shared-keywords
   `((,(regexp-opt
        '("TRUE" "FALSE")
@@ -60,7 +63,7 @@
      . font-lock-keyword-comment-delimiter-face)
     ("\\_<\\\\[[:word:]]+"
      . font-lock-builtin-face)
-    ("\\b\\([[:word:]]+\\)\\((.*)\\)?\\S+=="
+    (,(concat "\\b\\(" pcal-mode--identifier-re "\\)\\((.*)\\)?\\S+==")
      . '(1 font-lock-function-name-face)
      )))
 
@@ -171,7 +174,7 @@
   "Regexp for matching the start of a statement.")
 
 (defvar pcal-mode--label-re
-  ".*:[[:blank:]]*$"
+  (concat "^[[:blank:]]*" pcal-mode--identifier-re ":[[:blank:]]*$")
   "Regexp for matching a label.")
 
 (defun tla-mode--indent-column ()
