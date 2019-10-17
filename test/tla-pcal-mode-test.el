@@ -146,13 +146,25 @@
                  ;;
                  (0 "fair process thing")
                  (2 "  begin")
-                 (4 "    active = { c \in Clients:")
-                 (4"     no_indent_after_inner_colon(c)}")
+                 (4 "    active = {c \\in Clients:")
+                 (14"              no_indent_after_inner_colon(c)}")
                  (0 "end process;")
                  ;;
                  )))
     (run-indent-test lines)))
 
+
+(ert-deftest pcal-mode--indent-parens-tests ()
+  (let ((lines '((0 "Foo = (\\A c \\in Clients:")
+                 (7 "       FooVals[c] = TRUE)")
+                 ;
+                 (0 "Bar = { \\A c \\in Clients:")
+                 (8 "        BarVals[c] = TRUE)")
+                 ;; Add {}, [], possibly nesting, ensure lines up with first
+                 ;; non-paren character
+                 ;;
+                 )))
+    (run-indent-test lines)))
 
 (defun run-indent-test (lines)
   (dotimes (n (length lines))

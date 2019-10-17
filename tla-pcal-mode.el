@@ -170,7 +170,7 @@
   "Regexp for matching the end of a statement.")
 
 (defvar pcal-mode--statement-begin-re
-  (concat ".*\\<variables?\\>")
+  (concat "^[[:blank:]]*variables?\\>")
   "Regexp for matching the start of a statement.")
 
 (defvar pcal-mode--label-re
@@ -209,14 +209,25 @@
 	     (setq level (- level 1))))))
   (point))
 
+(defun pcal-mode--in-paren (syntax-ppss)
+  (> (nth 0 syntax-ppss) 0))
+
+(defun pcal-mode--paren-start (syntax-ppss)
+  (nth 1 syntax-ppss))
+
 (defun pcal-mode--indent-column ()
   "Find the appropriate column for the current line, or
 nil if the syntax isn't recognized for indentation."
   (save-excursion
     (beginning-of-line)
     (cond ((bobp) 0)
+          ((pcal-mode--in-paren (syntax-ppss))
+           (goto-char (pcal-mode--paren-start (syntax-ppss)))
+           (forward-char 1)
+           (skip-chars-forward " ")
+           (setq current (current-column)))
           ((looking-at-p pcal-mode--process-end-re)
-           (setq current 0))
+           (setq current 0)) ; Possibly should match process start,
 	  ((or (looking-at-p pcal-mode--block-end-re)
 	       (looking-at-p pcal-mode--block-else-re))
 	   (pcal-mode--block-start)
