@@ -70,10 +70,10 @@
 (defvar tla-mode-font-lock-keywords
   `((,(regexp-opt
        '("ASSUME" "ASSUMPTION" "AXIOM" "CASE" "CHOOSE" "CONSTANT"
-	 "CONSTANTS" "DOMAIN" "ELSE" "ENABLED" "EXCEPT" "EXTENDS"
-	 "IF" "IN" "INSTANCE" "LET" "LOCAL" "MODULE" "OTHER"
-	 "SF_" "SUBSET" "THEN" "THEORUM" "UNCHANGED" "UNION"
-	 "VARIABLE" "VARIABLES" "WF_" "WITH")
+         "CONSTANTS" "DOMAIN" "ELSE" "ENABLED" "EXCEPT" "EXTENDS"
+         "IF" "IN" "INSTANCE" "LET" "LOCAL" "MODULE" "OTHER"
+         "SF_" "SUBSET" "THEN" "THEORUM" "UNCHANGED" "UNION"
+         "VARIABLE" "VARIABLES" "WF_" "WITH")
        'symbols)
      . font-lock-keyword-face)
     ,@tla-pcal-mode--shared-keywords
@@ -82,9 +82,9 @@
 (defvar pcal-mode-font-lock-keywords
   `((,(regexp-opt
        '("assert" "await" "begin" "call" "define" "do" "either"
-	 "else" "elsif" "end" "goto" "if" "macro" "or" "print"
-	 "procedure" "process" "return" "skip" "then" "variable"
-	 "variables" "when" "while" "with" ":=" "||")
+         "else" "elsif" "end" "goto" "if" "macro" "or" "print"
+         "procedure" "process" "return" "skip" "then" "variable"
+         "variables" "when" "while" "with" ":=" "||")
        'symbols)
      . font-lock-keyword-face)
     ,@tla-pcal-mode--shared-keywords))
@@ -121,10 +121,10 @@
 
 (defvar tla-mode--align-syntax-re
   (concat tla-mode--conj-re "\\|"
-	  tla-mode--disj-re "\\|"
-	  tla-mode--neg1-re "\\|"
-	  tla-mode--neg2-re "\\|"
-	  tla-mode--impl-re)
+          tla-mode--disj-re "\\|"
+          tla-mode--neg1-re "\\|"
+          tla-mode--neg2-re "\\|"
+          tla-mode--impl-re)
   "Regexp for matching TLA+ syntax to align.")
 
 (defvar pcal-mode-indent-offset 2
@@ -185,10 +185,10 @@
   (forward-line -1)
   (save-match-data
     (if (looking-at (concat ".*\\(" tla-mode--align-syntax-re "\\)"))
-	(progn
-	  (goto-char (nth 2 (match-data)))
-	  ;; todo -- could return list of options for in/outdent?
-	  (current-column))
+        (progn
+          (goto-char (nth 2 (match-data)))
+          ;; todo -- could return list of options for in/outdent?
+          (current-column))
       0))
   ;; just return nil to skip indenting because it's annoying right now :-(
   nil)
@@ -204,9 +204,9 @@
     (while (not (or (bobp) (< level 0)))
       (forward-line -1)
       (cond ((looking-at-p pcal-mode--block-end-re)
-	     (setq level (+ level 1)))
-	    ((looking-at-p pcal-mode--block-begin-re)
-	     (setq level (- level 1))))))
+             (setq level (+ level 1)))
+            ((looking-at-p pcal-mode--block-begin-re)
+             (setq level (- level 1))))))
   (point))
 
 (defun pcal-mode--in-paren (syntax-ppss)
@@ -228,21 +228,21 @@ nil if the syntax isn't recognized for indentation."
            (setq current (current-column)))
           ((looking-at-p pcal-mode--process-end-re)
            (setq current 0)) ; Possibly should match process start,
-	  ((or (looking-at-p pcal-mode--block-end-re)
-	       (looking-at-p pcal-mode--block-else-re))
-	   (pcal-mode--block-start)
-	   (current-indentation))
-	  ((looking-at-p pcal-mode--label-re)
-	   (pcal-mode--block-start)
-	   (+ (current-indentation) pcal-mode-indent-offset))
-	  ((looking-at-p (concat "[[:blank:]]*" pcal-mode--align-syntax-re))
-	   (tla-mode--indent-column))
-	  (t
-	   ;; work backwards and base indent off the previous block
-	   (let (current after-stmt)
-	     (while (null current)
-	       (forward-line -1)
-	       (cond
+          ((or (looking-at-p pcal-mode--block-end-re)
+               (looking-at-p pcal-mode--block-else-re))
+           (pcal-mode--block-start)
+           (current-indentation))
+          ((looking-at-p pcal-mode--label-re)
+           (pcal-mode--block-start)
+           (+ (current-indentation) pcal-mode-indent-offset))
+          ((looking-at-p (concat "[[:blank:]]*" pcal-mode--align-syntax-re))
+           (tla-mode--indent-column))
+          (t
+           ;; work backwards and base indent off the previous block
+           (let (current after-stmt)
+             (while (null current)
+               (forward-line -1)
+               (cond
                 ((looking-at-p pcal-mode--block-end-re)
                  (setq current (current-indentation)))
                 ((looking-at-p pcal-mode--statement-end-re)
@@ -257,7 +257,7 @@ nil if the syntax isn't recognized for indentation."
                  (setq current (+ (current-indentation) pcal-mode-indent-offset)))
                 ((bobp)
                  (setq current 0))))
-	     (and current (max 0 current)))))))
+             (and current (max 0 current)))))))
 
 (defun pcal-mode-indent-line ()
   "Indent the current line according to PlusCal rules."
@@ -266,7 +266,7 @@ nil if the syntax isn't recognized for indentation."
     (beginning-of-line)
     (let ((col (pcal-mode--indent-column)))
       (when col
-	(indent-line-to col)))))
+        (indent-line-to col)))))
 
 ;; polymode is doing a special indent for the first line, maybe it
 ;; expects it's lining up markdown or something, but it's no good
@@ -275,8 +275,8 @@ nil if the syntax isn't recognized for indentation."
 (defun tla-pcal-mode--dont-indent-first-line (orig-fun &rest args)
   (let ((res (apply orig-fun args)))
     (if (and polymode-mode ; nb: true for both host and inner mode
-	     (eq major-mode 'pcal-mode))
-	0
+             (eq major-mode 'pcal-mode))
+        0
       res)))
 (advice-add 'pm--first-line-indent :around #'tla-pcal-mode--dont-indent-first-line)
 
@@ -302,7 +302,3 @@ nil if the syntax isn't recognized for indentation."
 
 (provide 'tla-pcal-mode)
 ;;; tla-pcal-mode.el ends here
-
-; Local Variables:
-; tab-width: 8
-; End:
