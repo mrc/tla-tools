@@ -64,8 +64,8 @@
     ("\\_<\\\\[[:word:]]+"
      . font-lock-builtin-face)
     (,(concat "\\b\\(" pcal-mode--identifier-re "\\)\\((.*)\\)?\\S+==")
-     . '(1 font-lock-function-name-face)
-     )))
+     . '(1 font-lock-function-name-face))
+     ))
 
 (defvar tla-mode-font-lock-keywords
   `((,(regexp-opt
@@ -87,6 +87,8 @@
          "variables" "when" "while" "with" ":=" "||")
        'symbols)
      . font-lock-keyword-face)
+    (,(concat "\\bmacro\\S+\\(" pcal-mode--identifier-re "\\)\\((.*)\\)?\\S+begin")
+     . '(1 font-lock-function-name-face))
     ,@tla-pcal-mode--shared-keywords))
 
 (defun tla-pcal-mode-set-comment-syntax-vars ()
