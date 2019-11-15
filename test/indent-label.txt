@@ -1,0 +1,23 @@
+process thing
+  begin
+    Label:
+      inside_label = thing
+end process;
+
+process thing
+  begin
+    Label_Long:
+      inside_label_long = thing
+end process;
+
+process thing
+  begin
+    Label0:
+      inside_label0 = thing
+end process;
+
+fair process thing
+  begin
+    active = {c \\in Clients:
+              no_indent_after_inner_colon(c)}
+end process;
