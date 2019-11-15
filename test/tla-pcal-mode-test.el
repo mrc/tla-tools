@@ -26,161 +26,58 @@
 
 (require 'ert)
 
-;; test indentation
-(ert-deftest pcal-mode--indent-column-tests ()
-  (let ((lines '((0  "variables")
-                 (2  "  x = 17,")
-                 (2  "  y = 23;")
-                 (0  "")
-                 (0  "define")
-                 (2  "  Everything == TRUE")
-                 (0  "end define;")
-                 (0  "macro fiddle(n) begin")
-                 (2  "  if n = 1 then")
-                 (4  "    skip;")
-                 (2  "  end if;")
-                 (0  "end macro;")
-                 (0  "\* comment with keyword in it: process")
-                 (0  "\* should not be indented")
-                 (0  "")
-                 (0  "begin")
-                 (2  "  Label1:")
-                 (4  "    skip;")
-                 (4  "    while 1 /= 2 do")
-                 (6  "      if 1 < 2 then")
-                 (8  "        skip;")
-                 (6  "      else")
-                 (8  "        either")
-                 (10 "          skip;")
-                 (8  "        or")
-                 (10 "          skip;")
-                 (8  "        end either;")
-                 (6  "      end if;")
-                 (6  "      Label2:")
-                 (8  "        skip;")
-                 (4  "    end while;")
-                 (0  "end"))))
+;; From https://stackoverflow.com/questions/26991001/elisp-get-path-to-file-relative-to-script
+(defvar local-directory
+  (if load-file-name
+      ;; File is being loaded.
+      (file-name-directory load-file-name)
+    ;; File is being evaluated using, for example, `eval-buffer'.
+    default-directory))
+
+(defun test-file-path (fname)
+  "Return an absolute path to a file containing properly indented TLA+ or Pluscal"
+  (expand-file-name fname local-directory))
+
+;; From http://ergoemacs.org/emacs/elisp_read_file_content.html
+(defun read-lines (file-path)
+  "Return a list of lines of a file at filePath."
+  (with-temp-buffer
+    (insert-file-contents file-path)
+    (split-string (buffer-string) "\n" t)))
+
+(defun a-test (test-name)
+  "Run a single test of indentation"
+  ;; You might think: why read into list of lines instead of just operating on
+  ;; buffer directly? By having a list of lines, we can test indentation of
+  ;; each line separately, being sure the above lines are in the form they were
+  ;; in the test file
+  (let ((lines (read-lines (test-file-path (concat test-name ".txt")))))
     (run-indent-test lines)))
 
-(ert-deftest pcal-mode--indent-else-blocks-tests ()
-  (let ((lines '((0 "if 1 /= 2 then")
-                 (2 "  foo = 13;")
-                 (0 "else")
-                 (2 "  foo = 42;")
-                 (0 "end if;")
-                 ;
-                 (0 "if 2 /= 3 then")
-                 (2 "  bar = 13;")
-                 (2 "  /* ignore else in comment")
-                 (2 "  baz = 27;")
-                 (0 "end if;")
-                 ;
-                 (0 "if 3 /= 4 then")
-                 (2 "  if 4 /= 5 then")
-                 (4 "    foo = 23;")
-                 (2 "  else")
-                 (4 "    foo = 97;")
-                 (2 "  end if;")
-                 (2 "  foo = 77;")
-                 (0 "end if;")
-                 )))
-    (run-indent-test lines)))
-
-(ert-deftest pcal-mode--indent-end-block-tests ()
-  (let ((lines '((0 "if 1 /= 2 then")
-                 (2 "  foo = 18;")
-                 (0 "end if;")
-                 ;
-                 (0 "if 2 /= 3 then")
-                 (2 "  /* ignore end in comment")
-                 (2 "  baz = 29;")
-                 (0 "end if;")
-                 )))
-    (run-indent-test lines)))
-
-(ert-deftest pcal-mode--indent-process-tests ()
-  (let ((lines '((0 "process thing")
-                 (2 "  begin")
-                 (4 "    foo = 49;")
-                 (0 "end process;")
-                 ;;
-                 (0 "fair process thing")
-                 (2 "  begin")
-                 (4 "    foo = 49;")
-                 (0 "end process;")
-                 ;;
-                 (0 "fair+ process thing")
-                 (2 "  begin")
-                 (4 "    foo = 49;")
-                 (0 "end process;")
-                 ;;
-                 (0 "process thing")
-                 (2 "  variables")
-                 (4 "    processtest_x = 17,")
-                 (4 "    processtest_y = 23;")
-                 (2 "  begin")
-                 (4 "    processtest_foo = 49;")
-                 (0 "end process;")
-                 )))
-    (run-indent-test lines)))
-
-
-(ert-deftest pcal-mode--indent-label-tests ()
-  (let ((lines '((0 "process thing")
-                 (2 "  begin")
-                 (4 "    Label:")
-                 (6 "      inside_label = thing")
-                 (0 "end process;")
-                 ;;
-                 (0 "process thing")
-                 (2 "  begin")
-                 (4 "    Label_Long:")
-                 (6 "      inside_label_long = thing")
-                 (0 "end process;")
-                 ;;
-                 (0 "process thing")
-                 (2 "  begin")
-                 (4 "    Label0:")
-                 (6 "      inside_label0 = thing")
-                 (0 "end process;")
-                 ;;
-                 (0 "fair process thing")
-                 (2 "  begin")
-                 (4 "    active = {c \\in Clients:")
-                 (14"              no_indent_after_inner_colon(c)}")
-                 (0 "end process;")
-                 ;;
-                 )))
-    (run-indent-test lines)))
-
-
-(ert-deftest pcal-mode--indent-parens-tests ()
-  (let ((lines '((0 "Foo = (\\A c \\in Clients:")
-                 (7 "       FooVals[c] = TRUE)")
-                 ;
-                 (0 "Bar = { \\A c \\in Clients:")
-                 (8 "        BarVals[c] = TRUE)")
-                 ;; Add {}, [], possibly nesting, ensure lines up with first
-                 ;; non-paren character
-                 ;;
-                 )))
-    (run-indent-test lines)))
+(ert-deftest pcal-mode--indent-column-test ()      (a-test "indent-columns"))
+(ert-deftest pcal-mode--indent-else-blocks-test () (a-test "indent-else-blocks"))
+(ert-deftest pcal-mode--indent-end-block-test ()   (a-test "indent-end-block"))
+(ert-deftest pcal-mode--indent-process-test ()     (a-test "indent-process"))
+(ert-deftest pcal-mode--indent-label-test ()       (a-test "indent-label"))
+(ert-deftest pcal-mode--indent-parens-test ()      (a-test "indent-parens"))
 
 (defun run-indent-test (lines)
   (dotimes (n (length lines))
     (with-temp-buffer
       (dolist (line lines)
-        (insert (cadr line) "\n"))
+        (insert line "\n"))
       (goto-char (point-min))
       (forward-line n) ; Add something in to place point at various places in line?
-      (save-excursion
-        (beginning-of-line)
-        (delete-horizontal-space))
-      (let* ((pcal-mode-indent-offset 2) ; dynamic binding because of defvar
-             (actual-indent (pcal-mode--indent-column))
-             (exp-spec (elt lines n))
-             (exp-indent (car exp-spec))
-             (exp-line (cadr exp-spec)))
-        ; Add enough extra data to make clear where the failure happened
-        (should (equal (list exp-indent (list 'line n) exp-line)
-                       (list actual-indent (list 'line n) exp-line)))))))
+      (let ((expected-indent 0))
+        (save-excursion
+          (beginning-of-line)
+          (skip-chars-forward " ")
+          (setq expected-indent (current-column))
+          (beginning-of-line)
+          (delete-horizontal-space))
+        (let* ((pcal-mode-indent-offset 2) ; dynamic binding because of defvar
+               (actual-indent (pcal-mode--indent-column))
+               (exp-line (elt lines n)))
+          ;; Add enough extra data to make clear where the failure happened
+          (should (equal (list expected-indent (list 'line n) exp-line)
+                         (list actual-indent (list 'line n) exp-line))))))))

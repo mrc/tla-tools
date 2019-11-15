@@ -1,0 +1,22 @@
+process thing
+  begin
+    foo = 49;
+end process;
+
+fair process thing
+  begin
+    foo = 49;
+end process;
+
+fair+ process thing
+  begin
+    foo = 49;
+end process;
+
+process thing
+  variables
+    processtest_x = 17,
+    processtest_y = 23;
+  begin
+    processtest_foo = 49;
+end process;

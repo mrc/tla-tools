@@ -1,0 +1,32 @@
+variables
+  x = 17,
+  y = 23;
+
+define
+  Everything == TRUE
+end define;
+macro fiddle(n) begin
+  if n = 1 then
+    skip;
+  end if;
+end macro;
+\* comment with keyword in it: process
+\* should not be indented
+
+begin
+  Label1:
+    skip;
+    while 1 /= 2 do
+      if 1 < 2 then
+        skip;
+      else
+        either
+          skip;
+        or
+          skip;
+        end either;
+      end if;
+      Label2:
+        skip;
+    end while;
+end

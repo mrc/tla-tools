@@ -1,0 +1,8 @@
+if 1 /= 2 then
+  foo = 18;
+end if;
+
+if 2 /= 3 then
+  /* ignore end in comment
+  baz = 29;
+end if;
