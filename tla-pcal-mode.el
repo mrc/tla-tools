@@ -102,6 +102,7 @@
   :syntax-table tla-mode-syntax-table
   (setq font-lock-defaults '(tla-mode-font-lock-keywords))
   (tla-pcal-mode-set-comment-syntax-vars)
+  (setq-local indent-line-function #'tla-mode-indent-line)
   )
 
 (define-derived-mode pcal-mode prog-mode "PlusCal"
@@ -128,6 +129,23 @@
           tla-mode--neg2-re "\\|"
           tla-mode--impl-re)
   "Regexp for matching TLA+ syntax to align.")
+
+(defun tla-mode--indent-column ()
+  "Find the appropriate column for the current line."
+  ;; For now, just using the same indentation is used in PlusCal mode.  This is
+  ;; mostly right, and I think only really wrong if someone sprinkles in bits
+  ;; of PlusCal syntax in their TLA+, in which case, on their head be it.
+  (pcal-mode--indent-column))
+
+
+(defun tla-mode-indent-line ()
+  "Indent the current line according to TLA+ rules."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (let ((col (tla-mode--indent-column)))
+      (when col
+        (indent-line-to col)))))
 
 (defvar pcal-mode-indent-offset 2
   "Indent lines by this many columns.")
@@ -179,21 +197,6 @@
   (concat "^[[:blank:]]*" pcal-mode--identifier-re ":[[:blank:]]*$")
   "Regexp for matching a label.")
 
-(defun tla-mode--indent-column ()
-  "Find the appropriate column for the current line."
-  ;; Really basic: look at line above, if it has tla syntax, align
-  ;; with that. Doesn't handle indenting/outdenting operators that are
-  ;; not alike, which is a huge pain.
-  (forward-line -1)
-  (save-match-data
-    (if (looking-at (concat ".*\\(" tla-mode--align-syntax-re "\\)"))
-        (progn
-          (goto-char (nth 2 (match-data)))
-          ;; todo -- could return list of options for in/outdent?
-          (current-column))
-      0))
-  ;; just return nil to skip indenting because it's annoying right now :-(
-  nil)
 
 (defvar pcal-mode--align-syntax-re
   tla-mode--align-syntax-re
