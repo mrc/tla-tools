@@ -1,0 +1,6 @@
+Foo = (\A c \in Clients:
+       FooVals[c] = TRUE)
+
+Bar = { \A c \in Clients:
+        BarVals[c] = TRUE }
+\* Add [], possibly nesting, ensure lines up with first non-paren character
