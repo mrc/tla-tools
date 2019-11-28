@@ -86,3 +86,23 @@
           ;; Add enough extra data to make clear where the failure happened
           (should (equal (list expected-indent (list 'line n) exp-line)
                          (list actual-indent (list 'line n) exp-line))))))))
+
+(ert-deftest tla-mode--keep-conjucts-indented ()
+  (let ((test-lines
+         "
+/\\ x = 1
+  \\/ y = 2
+"))
+    (with-temp-buffer
+      (insert test-lines)
+      (goto-char (point-min))
+      (forward-line 2)
+      ;;(should (string= (thing-at-point 'line) "foo"))
+      (should (equal (pcal-mode--indent-column) nil))
+      )))
+
+(ert-deftest tla-mode--align-syntax-match-works ()
+  (should (equal 0 (string-match-p tla-mode--align-syntax-re "/\\")))
+  (should (equal 0 (string-match-p tla-mode--align-syntax-re " /\\")))
+  (should (equal 0 (string-match-p tla-mode--align-syntax-re " \\/")))
+  )

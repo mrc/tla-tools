@@ -122,12 +122,16 @@
 (defvar tla-mode--neg2-re "/=")    ; /=
 (defvar tla-mode--impl-re "=>")    ; =>
 
+; "^[[:blank:]]*\\(/\\\\\\|\\\\/\\)"
 (defvar tla-mode--align-syntax-re
-  (concat tla-mode--conj-re "\\|"
+  (concat "[[:blank:]]*\\("
+          tla-mode--conj-re "\\|"
           tla-mode--disj-re "\\|"
           tla-mode--neg1-re "\\|"
           tla-mode--neg2-re "\\|"
-          tla-mode--impl-re)
+          tla-mode--impl-re
+          "\\)"
+          )
   "Regexp for matching TLA+ syntax to align.")
 
 (defun tla-mode--indent-column ()
@@ -137,6 +141,24 @@
   ;; of PlusCal syntax in their TLA+, in which case, on their head be it.
   (pcal-mode--indent-column))
 
+(defun tla-mode--align-indent ()
+  "When looking at the special TLA+ symbols where whitespace is significant,\
+   check line above: if it doesn't have those symbols, go to left column;\
+   if it *does* have those symbols: if current indent is less than that of \
+   line above, go to that indent; otherwise return nil to indicate do nothing."
+  (save-excursion
+    (skip-chars-forward "[[:blank:]]")
+    (let ((cur-indent (current-indentation)))
+      (forward-line -1)
+      (save-match-data
+        (if (looking-at tla-mode--align-syntax-re)
+            (progn
+              (goto-char (nth 2 (match-data)))
+              ;; todo -- could return list of options for in/outdent?
+              (if (> cur-indent (current-column))
+                  nil
+                (current-column)))
+          0)))))
 
 (defun tla-mode-indent-line ()
   "Indent the current line according to TLA+ rules."
@@ -197,11 +219,6 @@
   (concat "^[[:blank:]]*" pcal-mode--identifier-re ":[[:blank:]]*$")
   "Regexp for matching a label.")
 
-
-(defvar pcal-mode--align-syntax-re
-  tla-mode--align-syntax-re
-  "Regexp for matching TLA+ syntax to align.")
-
 (defun pcal-mode--block-start ()
   "Move to the start of the block."
   (beginning-of-line)
@@ -240,8 +257,8 @@ nil if the syntax isn't recognized for indentation."
           ((looking-at-p pcal-mode--label-re)
            (pcal-mode--block-start)
            (+ (current-indentation) pcal-mode-indent-offset))
-          ((looking-at-p (concat "[[:blank:]]*" pcal-mode--align-syntax-re))
-           (tla-mode--indent-column))
+          ((looking-at-p tla-mode--align-syntax-re)
+           (tla-mode--align-indent))
           (t
            ;; work backwards and base indent off the previous block
            (let (current after-stmt)
