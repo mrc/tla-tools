@@ -45,23 +45,28 @@
     (insert-file-contents file-path)
     (split-string (buffer-string) "\n" t)))
 
-(defun a-test (test-name)
-  "Run a single test of indentation"
+(defun indent-test (test-name mode)
+  "Run a single test of indentation, in either pcal or tla mode"
   ;; You might think: why read into list of lines instead of just operating on
   ;; buffer directly? By having a list of lines, we can test indentation of
   ;; each line separately, being sure the above lines are in the form they were
   ;; in the test file
-  (let ((lines (read-lines (test-file-path (concat test-name ".txt")))))
-    (run-indent-test lines)))
+  (let ((lines (read-lines (test-file-path (concat test-name "." mode))))
+        (indent-func (if (equal mode "pcal")
+                         #'pcal-mode--indent-column
+                       #'tla-mode--indent-column)))
+    (run-indent-test lines indent-func)))
 
-(ert-deftest pcal-mode--indent-column-test ()      (a-test "indent-columns"))
-(ert-deftest pcal-mode--indent-else-blocks-test () (a-test "indent-else-blocks"))
-(ert-deftest pcal-mode--indent-end-block-test ()   (a-test "indent-end-block"))
-(ert-deftest pcal-mode--indent-process-test ()     (a-test "indent-process"))
-(ert-deftest pcal-mode--indent-label-test ()       (a-test "indent-label"))
-(ert-deftest pcal-mode--indent-parens-test ()      (a-test "indent-parens"))
+(ert-deftest pcal-mode--indent-column-test ()      (indent-test "indent-columns" "pcal"))
+(ert-deftest pcal-mode--indent-else-blocks-test () (indent-test "indent-else-blocks" "pcal"))
+(ert-deftest pcal-mode--indent-end-block-test ()   (indent-test "indent-end-block" "pcal"))
+(ert-deftest pcal-mode--indent-process-test ()     (indent-test "indent-process" "pcal"))
+(ert-deftest pcal-mode--indent-label-test ()       (indent-test "indent-label" "pcal"))
+(ert-deftest pcal-mode--indent-parens-test ()      (indent-test "indent-parens" "pcal"))
 
-(defun run-indent-test (lines)
+(ert-deftest tla-mode--indent-parens-test ()      (indent-test "indent-parens" "tla"))
+
+(defun run-indent-test (lines indent-func)
   (dotimes (n (length lines))
     (with-temp-buffer
       (dolist (line lines)
@@ -76,7 +81,7 @@
           (beginning-of-line)
           (delete-horizontal-space))
         (let* ((pcal-mode-indent-offset 2) ; dynamic binding because of defvar
-               (actual-indent (pcal-mode--indent-column))
+               (actual-indent (funcall indent-func))
                (exp-line (elt lines n)))
           ;; Add enough extra data to make clear where the failure happened
           (should (equal (list expected-indent (list 'line n) exp-line)
