@@ -227,7 +227,7 @@ nil if the syntax isn't recognized for indentation."
            (goto-char (pcal-mode--paren-start (syntax-ppss)))
            (forward-char 1)
            (skip-chars-forward " ")
-           (setq current (current-column)))
+           (current-column))
           ((looking-at-p pcal-mode--process-end-re)
            (setq current 0)) ; Possibly should match process start,
           ((or (looking-at-p pcal-mode--block-end-re)
