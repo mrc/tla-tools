@@ -314,6 +314,16 @@ nil if the syntax isn't recognized for indentation."
   :head-mode 'host
   :tail-mode 'host)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; auto-insert
+(defun tla-auto-insert ()
+  (let ((name (file-name-sans-extension (file-name-base (buffer-file-name)))))
+    (insert (concat
+             "------------------------------ MODULE " name " ------------------------------\n\n"
+             (make-string (+ 69 (length name)) ?=))))
+  (previous-line))
+(define-auto-insert 'tla-mode #'tla-auto-insert)
+
 ;;;###autoload
 (define-polymode tla-pcal-mode
   :hostmode 'poly-tla-pcal-hostmode

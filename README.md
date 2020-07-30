@@ -10,6 +10,7 @@ files. It depends on [polymode](https://polymode.github.io/).
 It supports the [p-syntax](https://lamport.azurewebsites.net/tla/p-manual.pdf)
 for PlusCal, not the c-syntax.
 
+A basic TLA+ [auto-insert](https://www.gnu.org/software/emacs/manual/html_node/autotype/Autoinserting.html) template is provided.
 
 ## Usage
 
