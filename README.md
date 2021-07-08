@@ -14,6 +14,10 @@ A basic TLA+ [auto-insert](https://www.gnu.org/software/emacs/manual/html_node/a
 
 ## Usage
 
+The command `tla-create-tlc-config-file` creates an empty configuration file
+for TLC, with placeholders for constants, the INIT and NEXT equation, and any
+invariants.
+
 ### Compilation-mode helper
 Add the source directory to `load-path` and `M-x load tla-tools`. Or
 just eval the buffer.
@@ -40,8 +44,6 @@ can be checked with M-x compile, with a compile command of `tlc
 * Error type (warning, error) is not guessed.
 * No extra support for "-tool" option (which makes tlc emit
   tool-readable messages.)
-* tlc requires a config file, and this package does nothing to help
-  generate it.
 * It would be nice if it auto reverted the buffer after pcal (which
   rewrites the tla file.) Until something nicer is done, I'm using
   `auto-revert-mode`. Alternatively check out
