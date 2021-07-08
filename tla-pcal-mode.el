@@ -324,6 +324,43 @@ nil if the syntax isn't recognized for indentation."
   (previous-line))
 (define-auto-insert 'tla-mode #'tla-auto-insert)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TLC configuration template
+(defun tla-create-tlc-config-file (config-file)
+  "Generate an empty TLC configuration in file CONFIG-FILE."
+  (interactive "FTLC configuration filename: ")
+  ;; TODO: we could detect all constants, and insert "X <-" for each
+  (when (or (not (file-exists-p config-file))
+            (yes-or-no-p "File exists, overwrite? "))
+    (let ((buffer (find-file-noselect config-file)))
+      (with-current-buffer buffer
+        (erase-buffer)
+        (insert "\\* -*- mode: tla; -*-
+
+\\* For documentation of this file, see e.g. Lamport,
+\\* \"Specifying Systems\" Section 14.7.1 (Page 262), available
+\\* online at http://lamport.azurewebsites.net/tla/book-21-07-04.pdf
+
+\\* CONSTANT definitions
+CONSTANTS
+\\* X <- const_X_1 \\* All constant definitions here
+
+\\* INIT definition
+INIT
+\\* Init \\* The name of the Init formula.
+
+\\* NEXT definition
+NEXT
+\\* Next \\* The name of the Next formula.
+
+\\* INVARIANT definitions
+INVARIANTS
+\\* TypeOk OtherInvariantOk \\* Any invariant formulas
+
+")
+        (tla-mode)
+        (pop-to-buffer buffer)))))
+
 ;;;###autoload
 (define-polymode tla-pcal-mode
   :hostmode 'poly-tla-pcal-hostmode
