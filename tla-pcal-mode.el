@@ -29,6 +29,8 @@
 ;;; Code:
 
 (require 'polymode)
+(require 'transient)
+(require 'seq)
 
 (defvar tla-mode-syntax-table
   (let ((table (make-syntax-table)))
@@ -326,6 +328,9 @@ nil if the syntax isn't recognized for indentation."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TLC configuration template
+(defvar-local tla--current-config-file nil
+  "The most recently-used or created configuration file for TLC.")
+
 (defun tla-create-tlc-config-file (config-file)
   "Generate an empty TLC configuration in file CONFIG-FILE."
   (interactive "FTLC configuration filename: ")
@@ -358,13 +363,90 @@ INVARIANTS
 \\* TypeOk OtherInvariantOk \\* Any invariant formulas
 
 ")
-        (tla-mode)
-        (pop-to-buffer buffer)))))
+        (tla-mode))
+      (setq tla--current-config-file config-file)
+      (pop-to-buffer buffer))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; commands: tlc, pcal, tlatex
+(transient-define-infix tla--tlc-config-file ()
+  :description "TLC configuration"
+  :class 'transient-lisp-variable
+  :variable 'tla--current-config-file
+  :key "-m"
+  :shortarg "-m"
+  :argument "-config "
+  :reader (lambda (prompt _initial-input _history)
+            (read-file-name
+             prompt
+             (file-name-directory (or tla--current-config-file ""))
+             (file-name-nondirectory (or tla--current-config-file ""))
+             t
+             nil
+             (lambda (f)
+               ;; If the extension isn't ".cfg", TLC will add ".cfg" to the
+               ;; filename by itself and then fail to find the config file
+               (or (not (stringp f))
+                   (directory-name-p f)
+                   (string= (file-name-extension f) "cfg"))))))
+
+(defun tla--run-pcal (&optional args)
+  (interactive
+   (list (transient-args 'tla-pcal-transient)))
+  (transient-set)
+  (let ((filename (file-relative-name buffer-file-name)))
+    (set (make-local-variable 'compile-command)
+         (concat "pcal"
+                 " "
+                 (shell-quote-argument filename)))
+    (compile compile-command)
+    ;; PlusCal creates a configuration file for us; use it
+    (setq tla--current-config-file (concat (file-name-sans-extension filename) ".cfg"))))
+
+(defun tla--run-tlc (&optional args)
+  (interactive
+   (list (transient-args 'tla-pcal-transient)))
+  (transient-set)
+  (let ((config-param (seq-find (lambda (arg) (string-prefix-p "-config " arg))
+                                args)))
+    (set (make-local-variable 'compile-command)
+         (concat "tlc "
+                 "-config " tla--current-config-file " "
+                 (if (member "-deadlock" args) "-deadlock " "")
+                 (shell-quote-argument (file-relative-name buffer-file-name)))))
+  (compile compile-command))
+
+(defun tla--convert-to-pdf (&optional args)
+  (interactive
+   (list (transient-args 'tla-pcal-transient)))
+  (transient-set)
+  (set (make-local-variable 'compile-command)
+       (concat "tlatex -latexCommand pdflatex -latexOutputExt pdf "
+               (if (member "-shade" args) "-shade " "")
+               (shell-quote-argument buffer-file-name)))
+  (compile compile-command))
+
+(define-transient-command tla-pcal-transient ()
+  "Menu of commands for TLA+ and PlusCal files."
+  :value '("-shade")
+  ["TLC Configuration"
+   ("c" "Create new TLC configuration" tla-create-tlc-config-file)]
+  ["TLC"
+   ("-d" "Skip deadlock checking" "-deadlock")
+   (tla--tlc-config-file)
+   ("m" "Run TLC model checker" tla--run-tlc)]
+  ["PlusCal"
+   ("t" "Translate PlusCal to TLA+" tla--run-pcal)]
+  ["PDF"
+   ("-s" "Shade comments" "-shade")
+   ("p" "Create PDF Version of spec" tla--convert-to-pdf)])
 
 ;;;###autoload
 (define-polymode tla-pcal-mode
   :hostmode 'poly-tla-pcal-hostmode
   :innermodes '(poly-tla-pcal--pcal-innermode))
+
+(define-key tla-pcal-mode-map (kbd "C-c C-c") 'tla-pcal-transient)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist (cons "\\.tla\\'" 'tla-pcal-mode))
