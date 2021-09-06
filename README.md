@@ -14,9 +14,22 @@ A basic TLA+ [auto-insert](https://www.gnu.org/software/emacs/manual/html_node/a
 
 ## Usage
 
-The command `tla-create-tlc-config-file` creates an empty configuration file
-for TLC, with placeholders for constants, the INIT and NEXT equation, and any
-invariants.
+Press `C-c C-c` for a menu of commands.
+
+The command `tla-create-tlc-config-file` (`C-c C-c c`) creates an empty
+configuration file for TLC, with placeholders for constants, the INIT and NEXT
+equation, and any invariants.
+
+`C-c C-c m` starts the TLC model checker with the last selected configuration
+file.  To select a configuration file before running TLC, press `C-c C-c -m m`.
+Press `-d` before `m` to toggle deadlock checking.
+
+`C-c C-c t` translates PlusCal and selects the created configuration file.
+
+`C-c C-c p` creates a PDF version of the current file.
+
+The menu commands expect [tla-bin](https://github.com/pmer/tla-bin) to be
+installed and `pcal`, `tlc` and `tlatex` to be in the path.
 
 ### Compilation-mode helper
 Add the source directory to `load-path` and `M-x load tla-tools`. Or
