@@ -32,6 +32,12 @@
 (require 'transient)
 (require 'seq)
 
+;;; Customization
+(defgroup tla+ nil
+  "Major mode for editing TLA+ and PlusCal files."
+  :group 'languages
+  :tag "TLA+")
+
 (defvar tla-mode-syntax-table
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?\( "()1" table)  ; (* comment starter
@@ -115,8 +121,10 @@
   (setq-local indent-line-function #'pcal-mode-indent-line)
   )
 
-(defvar tla-mode-indent-offset 2
-  "Indent lines by this many columns.")
+(defcustom tla-mode-indent-offset 2
+  "Amount of columns to indent lines in TLA+ code."
+  :type 'integer
+  :safe 'integerp)
 
 (defvar tla-mode--conj-re "/\\\\") ; /\
 (defvar tla-mode--disj-re "\\\\/") ; \/
@@ -171,8 +179,10 @@
       (when col
         (indent-line-to col)))))
 
-(defvar pcal-mode-indent-offset 2
-  "Indent lines by this many columns.")
+(defcustom pcal-mode-indent-offset 2
+  "Amount of columns to indent lines in PlusCal code."
+  :type 'integer
+  :safe 'integerp)
 
 (defvar pcal-mode--block-begin-re
   (concat "^[[:blank:]]*"
@@ -323,7 +333,7 @@ nil if the syntax isn't recognized for indentation."
     (insert (concat
              "------------------------------ MODULE " name " ------------------------------\n\n"
              (make-string (+ 69 (length name)) ?=))))
-  (previous-line))
+  (forward-line -1))
 (define-auto-insert 'tla-mode #'tla-auto-insert)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -369,6 +379,27 @@ INVARIANTS
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; commands: tlc, pcal, tlatex
+(defcustom tla-tlc-command "tlc"
+  "The command to run the TLC model checker.
+Can be a script, or e.g. directly `java -cp tla2tools.jar tlc2.TLC'."
+  :type 'string
+  :risky t)
+
+(defcustom tla-pcal-command "pcal"
+  "The command to run the PlusCal translator.
+Can be a script, or e.g. directly `java -cp tla2tools.jar pcal.trans'."
+  :type 'string
+  :risky t)
+
+(defcustom tla-tlatex-command "tlatex -latexCommand pdflatex -latexOutputExt pdf"
+  "The command to run the TLA-to-LaTeX translator.
+Can be a script, or e.g. directly `java -cp tla2tools.jar tla2tex.TLA'.
+
+Note that any arguments except `-shade' and the filename should
+be added to this command."
+  :type 'string
+  :risky t)
+
 (transient-define-infix tla--tlc-config-file ()
   :description "TLC configuration"
   :class 'transient-lisp-variable
@@ -390,13 +421,13 @@ INVARIANTS
                    (directory-name-p f)
                    (string= (file-name-extension f) "cfg"))))))
 
-(defun tla--run-pcal (&optional args)
+(defun tla--run-pcal (&optional _args)
   (interactive
    (list (transient-args 'tla-pcal-transient)))
   (transient-set)
   (let ((filename (file-relative-name buffer-file-name)))
     (set (make-local-variable 'compile-command)
-         (concat "pcal"
+         (concat tla-pcal-command " "
                  " "
                  (shell-quote-argument filename)))
     (compile compile-command)
@@ -407,13 +438,11 @@ INVARIANTS
   (interactive
    (list (transient-args 'tla-pcal-transient)))
   (transient-set)
-  (let ((config-param (seq-find (lambda (arg) (string-prefix-p "-config " arg))
-                                args)))
-    (set (make-local-variable 'compile-command)
-         (concat "tlc "
+  (set (make-local-variable 'compile-command)
+         (concat tla-tlc-command " "
                  "-config " tla--current-config-file " "
                  (if (member "-deadlock" args) "-deadlock " "")
-                 (shell-quote-argument (file-relative-name buffer-file-name)))))
+                 (shell-quote-argument (file-relative-name buffer-file-name))))
   (compile compile-command))
 
 (defun tla--convert-to-pdf (&optional args)
@@ -421,7 +450,7 @@ INVARIANTS
    (list (transient-args 'tla-pcal-transient)))
   (transient-set)
   (set (make-local-variable 'compile-command)
-       (concat "tlatex -latexCommand pdflatex -latexOutputExt pdf "
+       (concat tla-tlatex-command " "
                (if (member "-shade" args) "-shade " "")
                (shell-quote-argument buffer-file-name)))
   (compile compile-command))
