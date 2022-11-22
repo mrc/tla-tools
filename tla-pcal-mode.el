@@ -3,7 +3,10 @@
 ;; Copyright (C) 2019  Matt Curtis
 
 ;; Author: Matt Curtis <matt.r.curtis@gmail.com>
+;; Version: 1.0
+;; Package-Requires: ((emacs "26.1") (polymode "0.2") (transient "0.3"))
 ;; Keywords: languages
+;; URL: https://github.com/mrc/tla-tools
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -455,7 +458,7 @@ be added to this command."
                (shell-quote-argument buffer-file-name)))
   (compile compile-command))
 
-(define-transient-command tla-pcal-transient ()
+(transient-define-prefix tla-pcal-transient ()
   "Menu of commands for TLA+ and PlusCal files."
   :value '("-shade")
   ["TLC Configuration"
