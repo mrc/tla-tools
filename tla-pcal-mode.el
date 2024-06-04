@@ -299,11 +299,8 @@ nil if the syntax isn't recognized for indentation."
 (defun pcal-mode-indent-line ()
   "Indent the current line according to PlusCal rules."
   (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (let ((col (pcal-mode--indent-column)))
-      (when col
-        (indent-line-to col)))))
+  (when-let ((col (pcal-mode--indent-column)))
+    (indent-line-to col)))
 
 ;; polymode is doing a special indent for the first line, maybe it
 ;; expects it's lining up markdown or something, but it's no good
