@@ -264,7 +264,7 @@ nil if the syntax isn't recognized for indentation."
            (skip-chars-forward " ")
            (current-column))
           ((looking-at-p pcal-mode--process-end-re)
-           (setq current 0)) ; Possibly should match process start,
+           0) ; Possibly should match process start,
           ((or (looking-at-p pcal-mode--block-end-re)
                (looking-at-p pcal-mode--block-else-re))
            (pcal-mode--block-start)
