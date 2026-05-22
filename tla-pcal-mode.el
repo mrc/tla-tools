@@ -449,8 +449,9 @@ large/infinite domains symbolically."
   "Number of simulation runs for Apalache simulate command (default: 100).")
 
 (defvar tla--apalache-output-trace nil
-  "File path to write counterexample trace to (optional).
-When set, Apalache will write the found counterexample to this file.")
+  "Output trace option for Apalache (optional).
+Can be \"true\", \"false\", or a file path to write the counterexample trace to.
+When nil, the option is omitted and Apalache uses its default.")
 
 (transient-define-infix tla--apalache-max-run-infix ()
   :description "Max runs (simulate)"
@@ -512,22 +513,14 @@ When set, Apalache will write the found counterexample to this file.")
             (read-string prompt (or tla--apalache-cinit ""))))
 
 (transient-define-infix tla--apalache-output-trace-infix ()
-  :description "Output trace file"
+  :description "Output trace"
   :class 'transient-lisp-variable
   :variable 'tla--apalache-output-trace
   :key "-o"
   :shortarg "-o"
   :argument "--output-trace="
   :reader (lambda (prompt _initial-input _history)
-            (read-file-name prompt
-                            (file-name-directory (or tla--apalache-output-trace ""))
-                            (file-name-nondirectory (or tla--apalache-output-trace ""))
-                            nil
-                            nil
-                            (lambda (f)
-                              (or (not (stringp f))
-                                  (directory-name-p f)
-                                  (string= (file-name-extension f) "tla"))))))
+            (read-string prompt tla--apalache-output-trace)))
 
 (defun tla--run-pcal (&optional _args)
   (interactive
