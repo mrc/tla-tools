@@ -518,7 +518,7 @@ When nil, the option is omitted and Apalache uses its default.")
   :variable 'tla--apalache-output-trace
   :key "-o"
   :shortarg "-o"
-  :argument "--output-trace="
+  :argument "--output-trace=true"
   :reader (lambda (prompt _initial-input _history)
             (read-string prompt tla--apalache-output-trace)))
 
@@ -675,7 +675,7 @@ Single action testing mode for unit testing individual actions."
    (tla--apalache-config-infix)
    (tla--apalache-cinit-infix)
    ("-n" "No deadlock checking" "--no-deadlock")
-   (tla--apalache-output-trace-infix)
+   ("-o" "output itf trace" "--output-traces=true")
    ("a" "Run check" tla--run-apalache)
    ("s" "Run simulate" tla--run-apalache-simulate)
    ("x" "Run test" tla--run-apalache-test)]
